@@ -1,0 +1,177 @@
+# PhotoID AI - Basitleştirilmiş MVP TODO
+
+## 🎯 Proje Hedefi
+**Basit, hızlı, login'siz kimlik fotoğrafı işleme servisi**
+- Kullanıcı anında fotoğraf yükler → işlenmiş sonucu alır
+- Minimal friction, maksimum kullanılabilirlik
+- 2-3 haftada canlı MVP
+
+---
+
+## 🚀 MVP AŞAMASI (2-3 Hafta)
+
+### ✅ Hafta 1: TAMAMLANDI
+- [x] AI Pipeline (MediaPipe + rembg)
+- [x] Backend API (/api/v1/photos/preview)
+- [x] Frontend PhotoUploader component
+- [x] Basic file upload/processing
+
+### 🔄 Hafta 2: CORE FEATURES
+
+#### Backend İyileştirmeleri
+- [ ] **IP-based Rate Limiting**
+  ```python
+  # Her IP günde 10 fotoğraf limit
+  # Redis yerine basit in-memory cache
+  ```
+
+- [ ] **File Validation & Security**
+  ```python
+  # Max file size: 10MB
+  # Allowed formats: jpg, jpeg, png
+  # Malicious file detection
+  ```
+
+- [ ] **Error Handling & Logging**
+  ```python
+  # User-friendly error messages
+  # Server logging
+  # Processing status tracking
+  ```
+
+- [ ] **File Cleanup System**
+  ```python
+  # Auto-delete temp files after 1 hour
+  # Background cleanup job
+  ```
+
+#### Frontend İyileştirmeleri
+- [ ] **Landing Page**
+  - Hero section
+  - Before/after examples
+  - Simple "Upload & Process" CTA
+
+- [ ] **UI/UX Polish**
+  - Loading states
+  - Progress indicators
+  - Better error messages
+  - Mobile responsiveness
+
+- [ ] **Download & Share**
+  - High-quality download
+  - Social media sharing
+  - Copy/paste functionality
+
+### 🔧 Hafta 3: DEPLOYMENT & POLISH
+
+#### Production Deployment
+- [ ] **Hetzner Cloud Setup**
+  - Simple VPS deployment
+  - Nginx reverse proxy
+  - SSL certificate
+  - Domain setup
+
+- [ ] **Performance Optimization**
+  - Image optimization
+  - Caching headers
+  - CDN setup (optional)
+
+- [ ] **Monitoring**
+  - Health check endpoint
+  - Basic analytics (usage stats)
+  - Error tracking
+
+#### Final Polish
+- [ ] **SEO & Marketing**
+  - Meta tags
+  - Google Analytics
+  - Social media cards
+
+- [ ] **Legal & Privacy**
+  - Privacy policy
+  - Terms of service
+  - GDPR compliance (basic)
+
+---
+
+## 🔮 GELECEK FAZLAR (İsteğe Bağlı)
+
+### Faz 2: Enhanced Features (4-6 hafta)
+- [ ] Optional user accounts
+- [ ] Advanced AI features (super-resolution, lighting correction)
+- [ ] Batch processing
+- [ ] API for developers
+
+### Faz 3: Monetization (6-8 hafta)
+- [ ] Premium features
+- [ ] Payment integration
+- [ ] Subscription model
+- [ ] Business API
+
+---
+
+## 📊 Teknik Özellikler
+
+### MVP Requirements
+- **Processing Time**: <30 saniye
+- **Daily Capacity**: 1000+ photos
+- **Uptime**: >99%
+- **Supported Formats**: JPG, PNG
+- **Max File Size**: 10MB
+
+### Tech Stack
+- **Backend**: FastAPI + Python
+- **Frontend**: Next.js + TailwindCSS
+- **AI**: MediaPipe + rembg
+- **Deployment**: Hetzner VPS + Nginx
+- **Monitoring**: Basic logging + health checks
+
+---
+
+## 🎯 Success Metrics (MVP)
+
+### Technical
+- Processing success rate: >90%
+- Average processing time: <30s
+- Zero critical bugs
+- Mobile-friendly interface
+
+### Business
+- Daily active users: 50+
+- Processing success satisfaction
+- User return rate: >20%
+- Social media shares
+
+---
+
+## 📝 Implementation Notes
+
+### Rate Limiting Strategy
+```python
+# Simple in-memory rate limiting
+# Per IP: 10 photos/day, 3 photos/hour
+# Reset at midnight UTC
+# Upgrade message after limit
+```
+
+### File Management
+```python
+# Temp files in /uploads/temp/
+# Auto-cleanup after 1 hour
+# Process → Save → Return URL → Schedule cleanup
+```
+
+### Error Handling
+```python
+# User-friendly messages:
+# "No face detected" → "Please ensure your face is clearly visible"
+# "Multiple faces" → "Please use a photo with only one person"
+# "File too large" → "Please use a smaller file (max 10MB)"
+```
+
+---
+
+**Son Güncelleme**: 30 Temmuz 2025
+**Mevcut Durum**: Hafta 1 tamamlandı ✅
+**Sonraki Milestone**: Rate limiting + File validation
+**Target Launch**: 2-3 hafta içinde MVP
