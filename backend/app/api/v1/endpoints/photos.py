@@ -1,11 +1,12 @@
-from fastapi import APIRouter, UploadFile, File, HTTPException
+from fastapi import APIRouter, UploadFile, File, HTTPException, Query
 from fastapi.responses import FileResponse
 import shutil
 import os
 import uuid
+from typing import Optional
 
-# AI pipeline'ı import et
-from app.ai.processing import process_photo
+# AI pipeline ve preset boyutları import et
+from app.ai.processing import process_photo, PRESET_SIZES
 
 router = APIRouter()
 
@@ -15,61 +16,62 @@ os.makedirs(TEMP_DIR, exist_ok=True)
 
 @router.post("/preview",
     responses={
-        200: {
-            "content": {"image/png": {}},
-            "description": "Successfully processed image."
-        },
-        400: {"description": "Invalid image, e.g., no face detected, multiple faces, or poor quality."},
-        500: {"description": "Internal server error during processing."}
+        200: {"content": {"image/png": {}}},
+        400: {"description": "Invalid image or parameters."},
+        500: {"description": "Internal server error."}
     },
-    summary="Process a Photo for Preview",
-    description="Upload a photo to detect a face, perform quality checks, remove the background, and resize it. Returns the processed image."
+    summary="Process a Photo with Dynamic Sizing",
+    description="Upload a photo and process it. Specify a preset format or custom dimensions."
 )
-async def preview_photo(file: UploadFile = File(...) ):
+async def preview_photo(
+    file: UploadFile = File(...),
+    output_format: Optional[str] = Query("passport_eu", enum=list(PRESET_SIZES.keys())),
+    custom_width: Optional[int] = Query(None, gt=0, le=2000),
+    custom_height: Optional[int] = Query(None, gt=0, le=2000)
+):
     """
-    Bir fotoğraf yükler, AI pipeline'dan geçirir ve işlenmiş sonucu döndürür.
+    Bir fotoğrafı işler ve belirtilen formata veya özel boyuta göre ayarlar.
+    - **file**: Yüklenecek fotoğraf.
+    - **output_format**: `PRESET_SIZES` içinden bir anahtar (örn: "passport_tr").
+    - **custom_width**: Özel genişlik (piksel).
+    - **custom_height**: Özel yükseklik (piksel).
+    """
+    output_size = None
+    if custom_width and custom_height:
+        output_size = (custom_width, custom_height)
+    elif output_format and output_format in PRESET_SIZES:
+        output_size = PRESET_SIZES[output_format]
     
-    - **file**: Yüklenecek fotoğraf dosyası (örn: .jpg, .png).
-    """
-    # Geçici bir dosya adı oluştur
+    if not output_size:
+        raise HTTPException(status_code=400, detail="Geçerli bir çıktı formatı veya özel boyut belirtmelisiniz.")
+
     temp_id = str(uuid.uuid4())
     input_path = os.path.join(TEMP_DIR, f"{temp_id}_{file.filename}")
     processed_output_path = os.path.join(TEMP_DIR, f"{temp_id}_processed.png")
 
     try:
-        # Yüklenen dosyayı geçici olarak diske yaz
         with open(input_path, "wb") as buffer:
             shutil.copyfileobj(file.file, buffer)
 
-        # AI pipeline'ı çalıştır
-        processed_image = process_photo(input_image_path=input_path)
+        processed_image = process_photo(input_image_path=input_path, output_size=output_size)
 
         if processed_image is None:
-            # process_photo fonksiyonu kalite kontrolleri başarısız olduğunda None döner
             raise HTTPException(
                 status_code=400,
-                detail="Fotoğraf işlenemedi. Lütfen tek bir yüz içeren, yüzün net ve tam göründüğü, kenarlara çok yakın olmadığı bir fotoğraf yükleyin."
+                detail="Fotoğraf işlenemedi. Kalite kontrolünü geçemedi veya yüz algılanamadı."
             )
 
-        # İşlenmiş görüntüyü geçici olarak diske kaydet
         processed_image.save(processed_output_path, 'PNG')
 
-        # Sonucu dosya olarak döndür
         return FileResponse(
             processed_output_path,
             media_type="image/png",
-            filename="processed_photo.png"
+            filename=f"processed_{output_format}.png"
         )
 
     except Exception as e:
-        # Beklenmedik hataları yakala
         print(f"Sunucu Hatası: {e}")
-        raise HTTPException(status_code=500, detail="Fotoğraf işlenirken bir sunucu hatası oluştu.")
+        raise HTTPException(status_code=500, detail=f"Sunucu hatası: {e}")
     finally:
-        # Geçici dosyaları temizle
         if os.path.exists(input_path):
             os.remove(input_path)
-        if os.path.exists(processed_output_path):
-            # FileResponse'un dosyayı göndermesi için küçük bir gecikme gerekebilir
-            # Bu, daha sağlam bir çözüm için bir arka plan göreviyle yapılmalıdır.
-            pass # Şimdilik dosyayı silmiyoruz ki indirilebilsin.
