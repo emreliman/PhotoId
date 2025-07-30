@@ -1,23 +1,23 @@
 import cv2
 import mediapipe as mp
 from rembg import remove
-from PIL import Image
+from PIL import Image, ImageOps
 import os
-import numpy as np
 
 # MediaPipe Yüz Algılama modelini bir kere yükle
 mp_face_detection = mp.solutions.face_detection
 face_detection = mp_face_detection.FaceDetection(model_selection=1, min_detection_confidence=0.5)
 
-def process_photo(input_image_path: str):
+def process_photo(input_image_path: str, output_size=(600, 600)):
     """
-    Bir fotoğrafta yüz algılar, ardından arka planı kaldırır.
+    Bir fotoğrafta yüz algılar, arka planı kaldırır ve yeniden boyutlandırır.
 
     Args:
         input_image_path: İşlenecek fotoğrafın yolu.
+        output_size: Çıktı fotoğrafının boyutu (genişlik, yükseklik).
 
     Returns:
-        İşlenmiş fotoğrafı PIL Image formatında döndürür.
+        İşlenmiş ve boyutlandırılmış fotoğrafı PIL Image formatında döndürür.
         Eğer yüz algılanmazsa veya bir hata olursa None döndürür.
     """
     print(f"İşlem başlıyor: {input_image_path}")
@@ -41,26 +41,40 @@ def process_photo(input_image_path: str):
         print("UYARI: Fotoğrafta hiç yüz algılanamadı. İşlem durduruldu.")
         return None
     
-    print(f"{len(results.detections)} adet yüz algılandı. Arka plan temizleme adımına geçiliyor.")
+    print(f"{len(results.detections)} adet yüz algılandı.")
 
     # 3. Arka Planı Kaldırma
     print("Adım 2: Arka planı kaldırma...")
-    # rembg, PIL Image nesnesi ile daha iyi çalışır
     input_pil_image = Image.open(input_image_path)
-    output_pil_image = remove(input_pil_image)
+    no_bg_image = remove(input_pil_image)
+
+    # 4. Boyutlandırma ve Arka Plan Ekleme
+    print(f"Adım 3: {output_size[0]}x{output_size[1]} boyutuna getiriliyor...")
+    
+    # Görüntüyü orantılı olarak küçült
+    no_bg_image.thumbnail(output_size, Image.Resampling.LANCZOS)
+    
+    # Beyaz bir arka plan oluştur
+    new_background = Image.new("RGBA", output_size, (255, 255, 255, 255))
+    
+    # Küçültülmüş görüntüyü arka planın ortasına yapıştır
+    paste_x = (output_size[0] - no_bg_image.width) // 2
+    paste_y = (output_size[1] - no_bg_image.height) // 2
+    new_background.paste(no_bg_image, (paste_x, paste_y), no_bg_image)
+    
+    # Sonucu RGB'ye çevir (JPEG gibi formatlar için)
+    final_image = new_background.convert('RGB')
 
     print("İşlem başarıyla tamamlandı.")
-    return output_pil_image
+    return final_image
 
 
 if __name__ == '__main__':
     # Bu script'i doğrudan test etmek için kullanılır.
-    # Script'in konumu: backend/app/ai/processing.py
-    # Bu yüzden proje ana dizinine ulaşmak için 3 seviye yukarı çıkmalıyız.
     project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', '..'))
     
     input_path = os.path.join(project_root, 'uploads', 'test_portrait.jpg')
-    output_path = os.path.join(project_root, 'assets', 'test_portrait_processed.png')
+    output_path = os.path.join(project_root, 'assets', 'test_portrait_processed_resized.png')
 
     print("--- AI Pipeline Testi Başlatılıyor ---")
     
