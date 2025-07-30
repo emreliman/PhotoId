@@ -1,0 +1,469 @@
+# Kimlik Fotoğrafı AI Projesi - Detaylı TODO Listesi
+
+## 📋 Proje Genel Bilgileri
+- **Proje Adı**: PhotoID AI
+- **Hedef**: Bağımsız AI destekli kimlik/pasaport fotoğrafı düzenleme platformu
+- **Süre**: 13-17 hafta
+- **Bütçe**: ~€500 ilk kurulum + €65/ay işletme
+
+---
+
+## 🚀 FAZ 1: CORE AI DEVELOPMENT (6-8 Hafta)
+
+### Hafta 1-2: Proje Kurulumu ve Ortam Hazırlığı
+
+#### Geliştirme Ortamı
+- [ ] **Python 3.9+ kurulumu**
+  - Poetry veya pip-tools ile dependency management
+  - Virtual environment oluşturma
+- [ ] **Git repository kurulumu**
+  - GitHub/GitLab private repo
+  - .gitignore (Python, Node.js, Docker)
+  - README.md ve temel dokümantasyon
+- [ ] **Docker environment**
+  - Docker Desktop kurulumu
+  - docker-compose.yml hazırlama
+  - Development ve production containerları
+
+#### Backend Temel Yapı
+- [ ] **FastAPI proje kurulumu**
+  ```bash
+  pip install fastapi uvicorn sqlalchemy alembic redis celery
+  ```
+- [ ] **Klasör yapısı oluşturma**
+  ```
+  backend/
+  ├── app/
+  │   ├── api/
+  │   ├── core/
+  │   ├── db/
+  │   ├── models/
+  │   ├── services/
+  │   └── ai/
+  ├── tests/
+  ├── docker/
+  └── requirements.txt
+  ```
+- [ ] **Veritabanı kurulumu**
+  - PostgreSQL Docker container
+  - SQLAlchemy models (User, Photo, Payment)
+  - Alembic migrations
+
+#### AI Kütüphaneleri
+- [ ] **Core AI dependencies**
+  ```bash
+  pip install torch torchvision opencv-python pillow numpy
+  pip install ultralytics mediapipe rembg
+  ```
+- [ ] **Test AI kurulumu**
+  - Basit yüz algılama testi
+  - Arka plan kaldırma testi
+  - Performance benchmark
+
+---
+
+### Hafta 3-4: AI Pipeline Geliştirme
+
+#### Yüz Algılama Modülü
+- [ ] **MediaPipe Face Detection entegrasyonu**
+  - `app/ai/face_detection.py` oluşturma
+  - Yüz koordinatlarını tespit etme
+  - Yüz boyutları ve pozisyon hesaplama
+- [ ] **Kalite kontrol sistemi**
+  - Bulanık fotoğraf tespiti
+  - Çok karanlık/aydınlık kontrol
+  - Yüz görünürlük kontrolü
+
+#### Arka Plan Kaldırma
+- [ ] **U²-Net modeli entegrasyonu**
+  - Pre-trained model indirme
+  - `app/ai/background_removal.py` oluşturma
+  - GPU/CPU optimizasyonu
+- [ ] **Alternative: rembg kütüphanesi**
+  - Hızlı prototyping için
+  - Performance karşılaştırması
+- [ ] **Post-processing**
+  - Edge smoothing
+  - Mask refinement
+
+#### Görsel İşleme Pipeline
+- [ ] **Boyutlandırma sistemi**
+  - Standart kimlik fotoğrafı boyutları (3.5x4.5cm, 600x600px)
+  - Pasaport fotoğrafı boyutları (3.5x4.5cm)
+  - Vize fotoğrafı boyutları (ülke bazında)
+- [ ] **Kalite iyileştirme**
+  - Parlaklık/kontrast ayarı
+  - Keskinlik artırma
+  - Renk düzeltmesi
+- [ ] **Ana pipeline fonksiyonu**
+  ```python
+  def process_photo(image_path, output_format='passport'):
+      # 1. Yüz algılama
+      # 2. Arka plan kaldırma
+      # 3. Boyutlandırma
+      # 4. Kalite iyileştirme
+      # 5. Format dönüştürme
+      return processed_image
+  ```
+
+---
+
+### Hafta 5-6: Backend API Geliştirme
+
+#### API Endpoints
+- [ ] **Authentication endpoints**
+  - `POST /auth/register`
+  - `POST /auth/login`
+  - `POST /auth/refresh`
+  - JWT token sistemi
+- [ ] **Photo processing endpoints**
+  - `POST /api/upload` - Fotoğraf yükleme
+  - `GET /api/process/{photo_id}` - İşleme durumu
+  - `GET /api/download/{photo_id}` - İşlenmiş fotoğraf indirme
+  - `POST /api/preview` - Ücretsiz önizleme
+
+#### File Upload & Storage
+- [ ] **Dosya yükleme sistemi**
+  - Multipart form upload
+  - File validation (boyut, format)
+  - Temporary storage (24 saat)
+- [ ] **Image storage**
+  - Local file system (başlangıç için)
+  - Organized folder structure (/uploads/YYYY/MM/DD/)
+  - Automatic cleanup job
+
+#### Background Processing
+- [ ] **Celery task queue kurulumu**
+  - Redis broker
+  - Worker process
+  - Task monitoring
+- [ ] **AI processing tasks**
+  ```python
+  @celery.task
+  def process_photo_task(photo_id):
+      # AI pipeline çalıştırma
+      # Progress tracking
+      # Result storage
+  ```
+
+---
+
+### Hafta 7-8: Frontend Temel Geliştirme
+
+#### React Setup
+- [ ] **Next.js projesi oluşturma**
+  ```bash
+  npx create-next-app@latest photo-ai-frontend --typescript --tailwind
+  ```
+- [ ] **Gerekli dependencies**
+  ```bash
+  npm install axios react-dropzone react-query framer-motion
+  ```
+
+#### Ana Sayfalar
+- [ ] **Landing Page**
+  - Hero section
+  - Özellikler listesi
+  - Örnek önce/sonra görselleri
+  - Fiyat bilgisi
+- [ ] **Upload Page**
+  - Drag & drop interface
+  - File preview
+  - Progress bar
+  - Error handling
+
+#### Photo Processing Interface
+- [ ] **Upload Component**
+  ```jsx
+  const PhotoUploader = () => {
+    // Drag & drop
+    // File validation
+    // Upload progress
+    // Error states
+  }
+  ```
+- [ ] **Processing Component**
+  - Real-time progress
+  - Processing status
+  - Preview generation
+- [ ] **Result Component**
+  - Before/after comparison
+  - Download options
+  - Social sharing
+
+---
+
+## 🔧 FAZ 2: PRODUCTION READY (4-5 Hafta)
+
+### Hafta 9-10: Performans Optimizasyonu
+
+#### AI Model Optimizasyonu
+- [ ] **Model quantization**
+  - PyTorch JIT scripting
+  - Model boyutu küçültme
+  - Inference hızı artırma
+- [ ] **GPU/CPU hibrit sistem**
+  - GPU availability check
+  - Fallback CPU processing
+  - Resource monitoring
+- [ ] **Batch processing**
+  - Multiple photos aynı anda
+  - Queue optimization
+  - Memory management
+
+#### Caching Stratejisi
+- [ ] **Redis cache implementation**
+  - Processed images cache (1 saat)
+  - User session cache
+  - API response cache
+- [ ] **CDN integration**
+  - Static asset optimization
+  - Image delivery optimization
+  - Geographic distribution
+
+#### Database Optimizasyonu
+- [ ] **Index optimization**
+  - Query performance analysis
+  - Database schema refinement
+- [ ] **Connection pooling**
+  - SQLAlchemy pool configuration
+  - Connection timeout handling
+
+---
+
+### Hafta 11: Kullanıcı Sistemi ve Güvenlik
+
+#### Authentication System
+- [ ] **JWT token security**
+  - Token expiration handling
+  - Refresh token mechanism
+  - Rate limiting
+- [ ] **User management**
+  - Profile management
+  - Password reset
+  - Email verification
+
+#### Security Measures
+- [ ] **Input validation**
+  - File type validation
+  - Size limits
+  - Malicious file detection
+- [ ] **API security**
+  - CORS configuration
+  - Request rate limiting
+  - SQL injection prevention
+- [ ] **GDPR/KVKK compliance**
+  - Data retention policies
+  - User data deletion
+  - Privacy policy implementation
+
+---
+
+### Hafta 12: Ödeme Sistemi
+
+#### Stripe Integration
+- [ ] **Stripe setup**
+  - API keys configuration
+  - Webhook endpoints
+  - Product/price creation
+- [ ] **Payment flow**
+  - Single photo payment
+  - Subscription system
+  - Payment success/failure handling
+- [ ] **Invoice system**
+  - PDF generation
+  - Email notifications
+  - Tax calculation (KDV)
+
+#### Freemium Logic
+- [ ] **Usage tracking**
+  - Free quota per user
+  - Usage analytics
+  - Upgrade prompts
+- [ ] **Feature restrictions**
+  - Resolution limits for free users
+  - Watermark for free downloads
+  - Premium feature gates
+
+---
+
+### Hafta 13: Deployment ve Monitoring
+
+#### Production Deployment
+- [ ] **Hetzner Cloud setup**
+  - Server provisioning
+  - SSH key setup
+  - Firewall configuration
+- [ ] **Docker production setup**
+  - Multi-stage builds
+  - Environment variables
+  - Health checks
+- [ ] **Reverse proxy**
+  - Nginx configuration
+  - SSL certificate (Let's Encrypt)
+  - Static file serving
+
+#### Monitoring ve Logging
+- [ ] **Application monitoring**
+  - Health check endpoints
+  - Performance metrics
+  - Error tracking (Sentry)
+- [ ] **Infrastructure monitoring**
+  - Server resources
+  - Database performance
+  - Queue status
+- [ ] **Logging system**
+  - Structured logging
+  - Log rotation
+  - Error alerting
+
+---
+
+## 🌟 FAZ 3: SCALE & ENHANCE (3-4 Hafta)
+
+### Hafta 14: Çoklu Dil Desteği
+
+#### Internationalization
+- [ ] **next-i18next setup**
+  - Translation files
+  - Language switching
+  - URL localization
+- [ ] **Content translation**
+  - UI text translation
+  - Error messages
+  - Email templates
+- [ ] **RTL support**
+  - Arabic language support
+  - CSS adjustments
+
+### Hafta 15: Gelişmiş AI Özellikleri
+
+#### Advanced Processing
+- [ ] **Batch processing UI**
+  - Multiple file upload
+  - Bulk download
+  - Processing queue management
+- [ ] **Custom formatting**
+  - Custom dimensions
+  - Background color selection
+  - Border options
+- [ ] **Quality enhancement**
+  - Super-resolution
+  - Noise reduction
+  - Professional lighting adjustment
+
+### Hafta 16: Analytics ve SEO
+
+#### Analytics Implementation
+- [ ] **Google Analytics 4**
+  - Event tracking
+  - Conversion tracking
+  - User behavior analysis
+- [ ] **Custom analytics**
+  - Processing success rates
+  - User journey mapping
+  - Performance metrics
+
+#### SEO Optimization
+- [ ] **Technical SEO**
+  - Meta tags optimization
+  - Sitemap generation
+  - Schema markup
+- [ ] **Content SEO**
+  - Landing page optimization
+  - Blog setup
+  - Keyword targeting
+
+### Hafta 17: Final Testing ve Launch
+
+#### Comprehensive Testing
+- [ ] **Load testing**
+  - Concurrent user simulation
+  - API endpoint stress testing
+  - Database performance under load
+- [ ] **End-to-end testing**
+  - User journey testing
+  - Payment flow testing
+  - Error scenario testing
+- [ ] **Security testing**
+  - Penetration testing
+  - Vulnerability scanning
+  - Data protection validation
+
+#### Launch Preparation
+- [ ] **Production checklist**
+  - Environment variables
+  - Database migrations
+  - SSL certificates
+  - Monitoring setup
+- [ ] **Launch strategy**
+  - Soft launch (limited users)
+  - Feedback collection
+  - Bug fixes
+  - Full public launch
+
+---
+
+## 📊 Teknik Spesifikasyonlar
+
+### Server Requirements
+- **Development**: 4 vCPU, 8GB RAM, 50GB SSD
+- **Production**: 8 vCPU, 16GB RAM, 100GB SSD, GPU support
+
+### Performance Targets
+- **Processing Time**: <30 saniye per photo
+- **API Response**: <2 saniye
+- **Uptime**: >99.5%
+- **Concurrent Users**: 100+
+
+### Code Quality Standards
+- **Test Coverage**: >80%
+- **Code Style**: Black (Python), Prettier (JavaScript)
+- **Documentation**: Comprehensive API docs
+- **Version Control**: Git flow branching strategy
+
+---
+
+## 🚨 Risk Mitigation
+
+### Technical Risks
+- **AI Model Performance**: Fallback models, A/B testing
+- **Server Overload**: Auto-scaling, load balancing
+- **Data Loss**: Regular backups, redundancy
+
+### Business Risks
+- **Competition**: Unique features, superior quality
+- **Market Validation**: MVP testing, user feedback
+- **Legal Compliance**: GDPR/KVKK consultation
+
+---
+
+## 📈 Success Metrics
+
+### Technical Metrics
+- Processing success rate: >95%
+- Average processing time: <30s
+- System uptime: >99.5%
+- API response time: <2s
+
+### Business Metrics
+- User conversion rate: >5%
+- Monthly recurring revenue growth: >20%
+- Customer satisfaction: >4.5/5
+- Churn rate: <10%
+
+---
+
+## 📝 Notes
+
+- Bu TODO listesi esnek bir kılavuzdur. Geliştirme sürecinde ihtiyaçlara göre güncellenebilir.
+- Her hafta sonunda progress review yapılması önerilir.
+- Critical path items önceliklendirilmelidir.
+- Testing her fazda paralel olarak yürütülmelidir.
+- Documentation sürekli güncellenmeli.
+
+---
+
+**Son Güncelleme**: 29 Temmuz 2025
+**Proje Durumu**: Planning Phase
+**Sonraki Milestone**: Development Environment Setup

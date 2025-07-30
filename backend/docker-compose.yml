@@ -1,0 +1,50 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:15
+    container_name: photoid_postgres
+    environment:
+      POSTGRES_DB: photoid_db
+      POSTGRES_USER: photoid_user
+      POSTGRES_PASSWORD: photoid_password
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - photoid_network
+
+  # Redis for Celery
+  redis:
+    image: redis:7-alpine
+    container_name: photoid_redis
+    ports:
+      - "6379:6379"
+    networks:
+      - photoid_network
+
+  # Backend API
+  backend:
+    build: .
+    container_name: photoid_backend
+    ports:
+      - "8000:8000"
+    environment:
+      - DATABASE_URL=postgresql://photoid_user:photoid_password@postgres:5432/photoid_db
+      - REDIS_URL=redis://redis:6379
+    depends_on:
+      - postgres
+      - redis
+    volumes:
+      - ./uploads:/app/uploads
+    networks:
+      - photoid_network
+
+volumes:
+  postgres_data:
+
+networks:
+  photoid_network:
+    driver: bridge 
