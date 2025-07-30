@@ -5,11 +5,15 @@ import os
 
 from app.core.config import settings
 from app.api.v1.api import api_router
+from app.core.rate_limiter import rate_limit_middleware
 
 app = FastAPI(
     title=settings.PROJECT_NAME,
     openapi_url=f"{settings.API_V1_STR}/openapi.json"
 )
+
+# Rate limit middleware
+app.middleware("http")(rate_limit_middleware)
 
 # CORS middleware
 app.add_middleware(
