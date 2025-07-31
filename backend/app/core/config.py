@@ -11,12 +11,6 @@ class Settings(BaseSettings):
     PROJECT_NAME: str = "PhotoID AI"
     TEST_MODE: bool = os.getenv("TEST_MODE", "").lower() == "false"
     
-    # Database
-    DATABASE_URL: str = "postgresql://user:password@localhost:5432/photoid_db"
-    
-    # Redis
-    REDIS_URL: str = "redis://localhost:6379"
-    
     # JWT
     SECRET_KEY: str = "your-secret-key-here-change-in-production"
     ALGORITHM: str = "HS256"

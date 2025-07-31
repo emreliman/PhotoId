@@ -1,0 +1,19 @@
+# Monorepo'da sadece backend ile ilgili dosyaları dahil et
+!backend/
+!backend/app/
+!backend/requirements.txt
+!backend/Dockerfile
+!backend/render.yaml
+
+# Gereksiz dosyaları hariç tut
+frontend/
+assets/
+uploads/
+*.pyc
+__pycache__/
+.env
+.git/
+.gitignore
+README.md
+todo.txt
+todo_simplified.txt 

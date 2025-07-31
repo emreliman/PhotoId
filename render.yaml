@@ -1,0 +1,10 @@
+services:
+  - type: web
+    name: photoid-backend
+    env: docker
+    plan: starter
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.0
+    # Monorepo ayarları
+    rootDir: backend 
