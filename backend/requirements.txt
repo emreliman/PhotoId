@@ -3,14 +3,11 @@ fastapi==0.104.1
 uvicorn[standard]==0.24.0
 python-multipart==0.0.6
 
-# AI ve görsel işleme (stabil versions)
-opencv-python-headless==4.8.0.76
-pillow==10.0.1
-numpy==1.24.3
-mediapipe==0.10.5
-rembg==2.0.50
-
 # Utility
 python-dotenv==1.0.0
 pydantic==2.5.0
-pydantic-settings==2.1.0 
+pydantic-settings==2.1.0
+
+# Temel görsel işleme (AI kütüphanelerini sonra ekleyeceğiz)
+pillow==10.0.1
+numpy==1.24.3 
