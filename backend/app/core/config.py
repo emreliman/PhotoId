@@ -9,6 +9,7 @@ class Settings(BaseSettings):
     # API
     API_V1_STR: str = "/api/v1"
     PROJECT_NAME: str = "PhotoID AI"
+    TEST_MODE: bool = os.getenv("TEST_MODE", "").lower() == "false"
     
     # Database
     DATABASE_URL: str = "postgresql://user:password@localhost:5432/photoid_db"

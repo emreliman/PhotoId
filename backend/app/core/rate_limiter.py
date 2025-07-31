@@ -3,6 +3,7 @@ from fastapi.responses import JSONResponse
 from collections import defaultdict
 from datetime import datetime, timedelta
 import time
+from app.core.config import settings
 
 class RateLimiter:
     def __init__(self):
@@ -28,6 +29,9 @@ class RateLimiter:
 
     def check_rate_limit(self, request: Request):
         """Rate limit kontrolü yap"""
+        # Test modunda rate limit kontrolü yapma
+        if settings.TEST_MODE:
+            return True
         ip = request.client.host
         now = datetime.now()
         
