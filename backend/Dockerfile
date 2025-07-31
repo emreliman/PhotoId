@@ -27,11 +27,11 @@ COPY . .
 # Create uploads directory
 RUN mkdir -p uploads
 
-# Make start script executable
+# Make start script executable (if using start.sh)
 RUN chmod +x start.sh
 
-# Expose port
-EXPOSE 8000
+# Expose port (Render will set PORT environment variable)
+EXPOSE 10000
 
-# Run the application
-CMD ["./start.sh"] 
+# Run the application directly with uvicorn - PORT environment variable will be used
+CMD ["sh", "-c", "uvicorn app.main:app --host 0.0.0.0 --port ${PORT:-10000}"]
