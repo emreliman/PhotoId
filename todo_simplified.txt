@@ -19,20 +19,20 @@
 ### 🔄 Hafta 2: CORE FEATURES
 
 #### Backend İyileştirmeleri
-- [ ] **IP-based Rate Limiting**
+- [x] **IP-based Rate Limiting**
   ```python
   # Her IP günde 10 fotoğraf limit
   # Redis yerine basit in-memory cache
   ```
 
-- [ ] **File Validation & Security**
+- [x] **File Validation & Security**
   ```python
   # Max file size: 10MB
   # Allowed formats: jpg, jpeg, png
   # Malicious file detection
   ```
 
-- [ ] **Error Handling & Logging**
+- [x] **Error Handling & Logging**
   ```python
   # User-friendly error messages
   # Server logging
