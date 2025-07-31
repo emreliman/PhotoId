@@ -20,9 +20,9 @@ class Settings(BaseSettings):
     UPLOAD_DIR: str = "uploads"
     MAX_FILE_SIZE: int = 10485760  # 10MB
     
-    # Development
-    DEBUG: bool = True
-    ENVIRONMENT: str = "development"
+    # Development/Production
+    DEBUG: bool = os.getenv("DEBUG", "False").lower() == "true"
+    ENVIRONMENT: str = os.getenv("ENVIRONMENT", "production")
     
     class Config:
         env_file = ".env"

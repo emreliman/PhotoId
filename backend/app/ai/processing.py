@@ -4,6 +4,7 @@ from rembg import remove
 from PIL import Image, ImageOps
 import os
 import logging
+import gc
 
 # Custom exceptions
 from .exceptions import FaceNotFoundError, MultipleFacesError, ImageReadError
@@ -14,7 +15,10 @@ logger = logging.getLogger(__name__)
 
 # MediaPipe Yüz Algılama modelini bir kere yükle
 mp_face_detection = mp.solutions.face_detection
-face_detection = mp_face_detection.FaceDetection(model_selection=1, min_detection_confidence=0.5)
+face_detection = mp_face_detection.FaceDetection(
+    model_selection=1, 
+    min_detection_confidence=0.5
+)
 
 # Önceden tanımlanmış boyutlar (genişlik, yükseklik) piksel cinsinden
 # 300 DPI referans alınmıştır (1 cm = 118 piksel)
@@ -44,47 +48,63 @@ def process_photo(input_image_path: str, output_size=(600, 600)):
     """
     logger.info(f"Processing started for: {input_image_path}")
 
-    # 1. Görüntüyü Oku ve Kontrol Et
     try:
+        # 1. Görüntüyü Oku ve Kontrol Et
         image_cv2 = cv2.imread(input_image_path)
         if image_cv2 is None:
             raise ImageReadError(f"Image file could not be read or is corrupted: {input_image_path}")
-    except Exception as e:
-        raise ImageReadError(f"Failed to read input file: {input_image_path}. Error: {e}")
+        
+        # Memory optimization: Resize if too large
+        height, width = image_cv2.shape[:2]
+        if width > 1920 or height > 1080:
+            scale = min(1920/width, 1080/height)
+            new_width = int(width * scale)
+            new_height = int(height * scale)
+            image_cv2 = cv2.resize(image_cv2, (new_width, new_height))
+            logger.info(f"Resized image to {new_width}x{new_height} for memory optimization")
 
-    # 2. Yüz Algılama ve Kalite Kontrol
-    logger.info("Step 1 & 2: Face detection and quality check...")
-    image_rgb = cv2.cvtColor(image_cv2, cv2.COLOR_BGR2RGB)
-    results = face_detection.process(image_rgb)
+        # 2. Yüz Algılama ve Kalite Kontrol
+        logger.info("Step 1 & 2: Face detection and quality check...")
+        image_rgb = cv2.cvtColor(image_cv2, cv2.COLOR_BGR2RGB)
+        results = face_detection.process(image_rgb)
 
-    if not results.detections:
-        raise FaceNotFoundError("No face detected in the photo.")
-    if len(results.detections) > 1:
-        raise MultipleFacesError("Multiple faces detected in the photo.")
+        if not results.detections:
+            raise FaceNotFoundError("No face detected in the photo.")
+        if len(results.detections) > 1:
+            raise MultipleFacesError("Multiple faces detected in the photo.")
 
-    # Kalite kontrol mantığı...
-    logger.info("Quality check successful.")
+        # Kalite kontrol mantığı...
+        logger.info("Quality check successful.")
 
-    # 3. Arka Planı Kaldırma
-    logger.info("Step 3: Removing background...")
-    try:
+        # 3. Arka Planı Kaldırma
+        logger.info("Step 3: Removing background...")
         input_pil_image = Image.open(input_image_path)
         no_bg_image = remove(input_pil_image)
+        
+        # Memory cleanup
+        del image_cv2, image_rgb, input_pil_image
+        gc.collect()
+
+        # 4. Boyutlandırma ve Arka Plan Ekleme
+        logger.info(f"Step 4: Resizing to {output_size[0]}x{output_size[1]}...")
+        no_bg_image.thumbnail(output_size, Image.Resampling.LANCZOS)
+        new_background = Image.new("RGBA", output_size, (255, 255, 255, 255))
+        paste_x = (output_size[0] - no_bg_image.width) // 2
+        paste_y = (output_size[1] - no_bg_image.height) // 2
+        new_background.paste(no_bg_image, (paste_x, paste_y), no_bg_image)
+        final_image = new_background.convert('RGB')
+        
+        # Memory cleanup
+        del no_bg_image, new_background
+        gc.collect()
+
+        logger.info("Processing completed successfully.")
+        return final_image
+
     except Exception as e:
-        raise PhotoProcessingError(f"Background removal failed. Error: {e}")
-
-
-    # 4. Boyutlandırma ve Arka Plan Ekleme
-    logger.info(f"Step 4: Resizing to {output_size[0]}x{output_size[1]}...")
-    no_bg_image.thumbnail(output_size, Image.Resampling.LANCZOS)
-    new_background = Image.new("RGBA", output_size, (255, 255, 255, 255))
-    paste_x = (output_size[0] - no_bg_image.width) // 2
-    paste_y = (output_size[1] - no_bg_image.height) // 2
-    new_background.paste(no_bg_image, (paste_x, paste_y), no_bg_image)
-    final_image = new_background.convert('RGB')
-
-    logger.info("Processing completed successfully.")
-    return final_image
+        # Memory cleanup on error
+        gc.collect()
+        raise e
 
 
 if __name__ == '__main__':
@@ -106,7 +126,7 @@ if __name__ == '__main__':
             if processed_image:
                 processed_image.save(output_path)
                 print(f"Test successful! Result saved to: {output_path}")
-        except PhotoProcessingError as e:
+        except Exception as e:
             print(f"Test failed as expected: {e}")
         except Exception as e:
             print(f"An unexpected error occurred: {e}")
