@@ -219,7 +219,7 @@ export default function PhotoUploader() {
                   <Copy size={16} />
                   {copyStatus}
                 </button>
-                {navigator.share && (
+                {typeof window !== 'undefined' && 'navigator' in window && 'share' in navigator && (
                   <button onClick={handleShare} className="inline-flex items-center gap-2 bg-blue-500 text-white px-4 py-2 rounded-lg text-sm hover:bg-blue-600 transition-colors shadow-md">
                     <Share2 size={16} />
                     Share
