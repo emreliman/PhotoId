@@ -20,8 +20,8 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=[
         "http://localhost:3000",  # Development
-        "https://photoid-frontend.vercel.app",  # Production frontend
-        "https://photoid.vercel.app",  # Alternative domain
+        "https://photo-id-virid.vercel.app",  # Production frontend
+        "https://photoid-frontend.vercel.app",  # Alternative domain
         "*"  # Temporary for testing
     ],
     allow_credentials=True,
