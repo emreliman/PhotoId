@@ -60,7 +60,7 @@ export default function PhotoUploader() {
       params.append('custom_height', customHeight.toString());
     }
 
-    const url = `http://127.0.0.1:8000/api/v1/photos/preview?${params.toString()}`;
+    const url = `https://photoid-571d.onrender.com/api/v1/photos/preview?${params.toString()}`;
 
     try {
       const response = await fetch(url, { method: 'POST', body: formData });

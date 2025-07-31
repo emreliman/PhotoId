@@ -18,7 +18,12 @@ app.middleware("http")(rate_limit_middleware)
 # CORS middleware
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Production'da spesifik domainler belirtilmeli
+    allow_origins=[
+        "http://localhost:3000",  # Development
+        "https://photoid-frontend.vercel.app",  # Production frontend
+        "https://photoid.vercel.app",  # Alternative domain
+        "*"  # Temporary for testing
+    ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
