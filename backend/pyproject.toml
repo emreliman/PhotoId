@@ -1,0 +1,16 @@
+[build-system]
+requires = ["setuptools>=40.8.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+py-modules = []
+
+[project]
+name = "photoid-backend"
+version = "1.0.0"
+description = "PhotoID AI Backend Application"
+requires-python = ">=3.11,<3.13"
+dependencies = []
+
+[project.optional-dependencies]
+dev = []
